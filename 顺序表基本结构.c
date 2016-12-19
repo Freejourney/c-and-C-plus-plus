@@ -1,30 +1,44 @@
 #include <stdio.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 
 typedef struct{
+	int *data;
 	int size;
 	int max;
-	int *data;
-}seqlist; 
+}orderlist; 
 
-void Inilist(seqlist *l, int n);
+void IniList(orderlist * L, int n);
+void Insert(orderlist * L, int n);
+void ShowList(orderlist * L, int n);
 
 int main()
 {
-	seqlist s;
-	Inilist(&s, 10);
-	printf("%d\n", (&s)->max);
-	printf("%d\n", s.size);
+	orderlist k; 
+	IniList(&k, 10);
+	Insert(&k, 5);
+	ShowList(&k, 5);
+	return 0;
 }
-
-void Inilist(seqlist * l, int n)
+void ShowList(orderlist * L, int n)
 {
-	l->data=(int *)malloc(n*sizeof(int));
-	if(l->data==NULL)
+	int i;
+	for(i=0;i<n;i++)
+		printf("%d  ", L->data[i]);
+} 
+
+void IniList(orderlist *L, int n)
+{
+	L->data=(int *)malloc(10*sizeof(int));
+	L->size=0;
+	L->max=10;
+}
+ 
+void Insert(orderlist * L, int n)
+{
+	int i;
+	for(i=0;i<n;i++)
 	{
-		printf("Memory allocation error\n"); 
-		exit(1);
+		scanf("%d", &L->data[i]);
+		L->size++; 
 	}
-	l->size=0;
-	l->max=n;
 }
