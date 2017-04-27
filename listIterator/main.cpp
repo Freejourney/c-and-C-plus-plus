@@ -1,4 +1,4 @@
-#include "List.h"
+#include "ListandIterator.h"
 #include <stdlib.h>
 //#include "testfunction.cpp"
 
@@ -8,9 +8,18 @@ void TestList()
 	List<int> l;
 	l.PushBack(1);
 	l.PushBack(2);
+	l.PushBack(2);
 	l.PushBack(3);
 	l.PushBack(4);
+	l.PushBack(2);
 	l.PushBack(5);
+	l.PushFront(1);
+	l.PushFront(1);
+
+	cout << "The list has " << l.Remove(2) << " same val!" << endl;
+	cout << "THe size is " << l.Size() << endl;
+	cout << "Empty? " << l.Empty() << endl;
+	
 
 	//打印l中的元素
 	List<int> ::Iterator it1 = l.Begin();//定义迭代器it1为l的起始部分
@@ -20,6 +29,7 @@ void TestList()
 		++it1;	//重载了++运算符，可以访问下一个元素
 	}
 	cout << endl;
+	
 }
 
 void TestReverseIterator()
@@ -40,7 +50,6 @@ void TestReverseIterator()
 	}
 	cout << endl;
 	cout << endl;
-//	cout << l.Remove(1) << endl;
 }
 
 int main()
