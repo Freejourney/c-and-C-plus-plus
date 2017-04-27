@@ -10,9 +10,26 @@ struct __ListNode
 	__ListNode<T> * _next;
 	__ListNode<T> * _prev;
 	T _data;
+	static int index;
 
-	__ListNode(const T & data):_next(NULL), _prev(NULL), _data(data){}	//创建节点的构造函数
+	__ListNode():_next(NULL), _prev(NULL), _data(0){
+		index++;
+		cout << "a Node is created!" << endl;
+	}
+	__ListNode(const T & data):_next(NULL), _prev(NULL), _data(data){
+		index++;
+		cout << "a Node is created!" << endl;
+	}	//创建节点的构造函数
+
+	~__ListNode()
+	{
+		cout << "a Node is destroyed!" << endl;
+		index--;
+	}
 };
+
+template<typename T>
+T __ListNode<T>::index = 0;
 
 //定义迭代器，模板参数为T，T的引用，T类型的指针
 template<typename T, typename Ref, typename Ptr>
@@ -130,7 +147,7 @@ struct __ListReverseIterator
 		return *_node;
 	}
 
-	
+
 };
 
 //定义链表
@@ -155,7 +172,17 @@ public:
 		_head->_prev = _head;
 	}
 
-	//在尾部插入，删除一个元素
+	//在首部插入一个元素
+	void PushFront(const T & x)
+	{
+		Node * temp = BuyNewNode(x);
+		temp->_next = _head->_next;
+		temp->_prev = _head;
+		_head->_next->_prev = temp;
+		_head->_next = temp;
+	}
+
+	//在尾部插入一个元素
 	void PushBack(const T & x)
 	{
 		Node * tail = _head->_prev;	//通过_head找到了尾节点
@@ -166,27 +193,55 @@ public:
 		_head->_prev = tmp;
 	}
 
+	//删除链表中所有值为val的值，返回值是删除的个数
+	int Remove(int val)
+	{
+		Node * temp = _head->_next;
+		int n = 0;
+		while(temp != _head)
+		{
+			if(temp->_data == val)//			**********这是个双向环形链表！！！！
+			{
+				temp->_next->_prev = temp->_prev;
+				temp->_prev->_next = temp->_next ;
+				Node * tep = temp->_prev;
+				delete temp;
+				n++;
+				temp = tep->_next;
+			}
+			else
+			{
+				temp = temp->_next;	
+			}
+
+		}
+		return n;
+	}
+
 	//定义返回迭代器类型的Begin()和End()
-	Iterator Begin()
+	Iterator Begin() const
 	{
 		return Iterator(_head->_next);
 	}
 
-	Iterator End()
+	Iterator End() const
 	{
 		return Iterator(_head);
 	}
 
 	//定义返回迭代器类型的rBegin()和rEnd()
-	ReverseIterator rBegin()
+	ReverseIterator rBegin() const
 	{
 		return ReverseIterator(_head->_prev);
 	}
 
-	ReverseIterator rEnd()
+	ReverseIterator rEnd() const
 	{
 		return ReverseIterator(_head);
 	}
+
+	int Size() const {return Node::index;}
+	bool Empty() const {return Node::index == 0;}
 
 protected:
 	Node * _head;
