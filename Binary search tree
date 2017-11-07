@@ -1,0 +1,233 @@
+#include <queue>
+#include <iostream>
+using namespace std;
+
+struct Location{
+	int xindent;
+	int ylevel;
+};
+
+void Gotoxy(int x, int y)
+{
+	static int indent = 0, level = 0;
+	if(y == 0)
+	{
+		indent = 0;
+		level = 0;
+	}
+	if(y != level)		//不相等时说明发生了“换行”(跳到了下一层) 
+	{
+		cout << endl;
+		level++;
+		indent = 0;
+	}
+	cout.width(x-indent);
+	indent = x;
+}
+
+
+template<class T>
+class BSTree
+{
+private:
+	struct BTNode
+	{
+		T data;
+		BTNode * left, * right;
+		BTNode(const T & item, BTNode * _left = NULL, BTNode * _right = NULL):data(item), left(_left), right(_right){} 
+	};
+	
+	BTNode * root;
+	int size;
+	void Insert(const T & x, BTNode * &t);
+	void Remove(const T & x, BTNode * &t);
+	BTNode * FindMin(BTNode * t) const;
+	BTNode * FindMax(BTNode * t) const;
+	BTNode * FindNode(const T & x, BTNode * t) const;
+	void Clear(BTNode * &t);
+	void PrintBTree(const BTNode * t, int w) const;
+	
+public:
+	BSTree():root(NULL), size(0){};
+	~BSTree(){Clear();}
+	T & FindMin() const { return FindMin(root)->data;}
+	T & FindMax() const { return FindMax(root)->data;}
+	bool Find(const T & x) const{return FindNode(x, root)!=NULL;}
+	bool Find(T & x) const;
+	bool Empty() const {return size == 0;}
+	int Size() {return size;}
+	void Clear(){Clear(root);}
+	void Update(const T & x);
+	void Insert(const T & x){Insert(x, root);}
+	void Remove(const T & x){Remove(x, root);}
+	void PrintBTree(int w) const {PrintBTree(root, w);} 
+};
+
+template<class T>
+typename BSTree<T>::BTNode *  BSTree<T>::FindMin(BTNode * t) const
+{
+	if(t!=NULL)
+		while(t->left!=NULL)
+			t = t->left;
+	return t;
+}
+
+template<class T>
+typename BSTree<T>::BTNode * BSTree<T>::FindMax(BTNode * t) const
+{
+	if(t!=NULL)
+		while(t->right!=NULL)
+			t = t->right;
+	return t;
+}
+
+template<class T>
+typename BSTree<T>::BTNode * BSTree<T>::FindNode(const T & x, BTNode * t) const
+{
+	if(t==NULL)
+		return NULL;
+	while(t)
+		if(x<t->data)
+			t = t->left;
+		else if(t->data<x)
+			t = t->right;
+		else
+			return t;
+	return NULL;
+}
+
+template<class T>
+void BSTree<T>::Clear(BTNode * &t)
+{
+	if(t==NULL)
+		return;
+	Clear(t->left);
+	Clear(t->right);
+	delete t;
+	t = NULL; 
+}
+
+template<class T>
+bool BSTree<T>::Find(T & x) const
+{
+	BTNode * p = FindNode(x, root);
+	if(p)
+	{
+		x = p->data;
+		return 1;
+	}
+	return 0;
+}
+
+template<class T>
+void BSTree<T>::Update(const T & x)
+{
+	BTNode * p = FindNode(x, root);
+	if(p)
+		p->data = x;
+	else
+		Insert(x);
+}
+
+template<class T>
+void BSTree<T>::Insert(const T & x, BTNode * &t)
+{
+	if(t==NULL)
+	{
+		t = new BTNode(x);
+		size++;
+	}
+	else if(x<t->data)
+		Insert(x, t->left);
+	else if(t->data<x)
+		Insert(x, t->right);
+}
+
+template<class T>
+void BSTree<T>::Remove(const T & x, BTNode * &t)
+{
+	if(t==NULL)
+		return;
+	if(x<t->data)
+		Remove(x, t->left);
+	else if(t->data<x)
+		Remove(x, t->right);
+	else if(t->left!=NULL&&t->right!=NULL)
+	{
+		t->data = FindMin(t->right)->data;
+		Remove(t->data, t->right); 
+	}
+	else
+	{
+		BTNode * old = t;
+		t = (t->left!=NULL)?t->left:t->right;
+		delete old;
+		size--;
+	}
+ } 
+ 
+ template<class T>
+ void BSTree<T>::PrintBTree(const BTNode * root, int screenwidth) const
+ {
+ 	if(root == NULL)
+ 		return;
+ 	int offset = screenwidth/2;
+ 	int level = 0;
+ 	
+ 	queue<const BTNode *> Q; 
+ 	queue<Location> L;
+ 	Location floc;
+ 	Location cloc;
+ 	floc.xindent = offset;
+ 	floc.ylevel = level;
+ 	Q.push(root);
+ 	L.push(floc);
+ 	while(!Q.empty())
+ 	{
+ 		root = Q.front();
+ 		Q.pop();
+ 		floc = L.front();
+ 		L.pop();
+ 		Gotoxy(floc.xindent, floc.ylevel);
+ 		cout << root->data;
+ 		
+ 		if(floc.ylevel!=level)	//level只会在层数发生变化时变化，层数增一，缩进减半 
+ 		{
+ 			level++;
+ 			offset = offset/2;
+		}
+		 
+ 		if(root->left)
+ 		{
+ 			Q.push(root->left);
+ 			cloc.xindent = floc.xindent-offset/2;
+ 			cloc.ylevel = floc.ylevel+1;		//插入的是下一层的节点 
+ 			L.push(cloc);
+		}
+		if(root->right)
+		{
+			Q.push(root->right);
+			cloc.xindent = floc.xindent+offset/2;
+			cloc.ylevel = level+1;
+			L.push(cloc);
+		}
+	 }
+	 cout << endl;
+ } 
+ 
+ int main()
+ {
+ 	BSTree<char> L;
+ 	char a[8] = {'H', 'K', 'J', 'C', 'B', 'F', 'D', 'E'};
+ 	for(int i = 0; i < 8; i++)
+ 		L.Insert(a[i]);
+ 	L.PrintBTree(40);
+ 	cout << "after deleting C:\n" << endl;
+ 	L.Remove('C');
+ 	L.PrintBTree(40);
+ 	cout << "after inserting C:\n" << endl;
+	L.Insert('C');
+	L.PrintBTree(40);
+	
+	return 0; 
+ }
